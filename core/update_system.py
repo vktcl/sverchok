@@ -380,10 +380,10 @@ def process_to_node(node):
     """
     Process nodes upstream until node
     """
-    global graphs
-    global graph_names
-    graphs = []
-    graph_names = []
+    # global graphs
+    # global graph_names
+    # graphs = []
+    # graph_names = []
 
     ng = node.id_data
     reset_error_nodes(ng)
@@ -402,10 +402,10 @@ def process_from_node(node):
     """
     global update_cache
     global partial_update_cache
-    global graphs
-    global graph_names
-    graphs = []
-    graph_names = []
+    # global graphs
+    # global graph_names
+    # graphs = []
+    # graph_names = []
 
     ng = node.id_data
     reset_error_nodes(ng)
