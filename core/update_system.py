@@ -30,9 +30,11 @@ import traceback
 import ast
 
 graphs = []
+graph_names = []
 
 no_data_color = (1, 0.3, 0)
 exception_color = (0.8, 0.0, 0)
+
 
 def update_error_colors(self, context):
     global no_data_color
@@ -51,21 +53,21 @@ def make_dep_dict(node_tree, down=False):
     Create a dependency dictionary for node group.
     """
     ng = node_tree
-    
     deps = collections.defaultdict(set)
-   
+
     # create wifi out dependencies, process if needed
-   
-    wifi_out_nodes = [(name, node.var_name)
-                  for name, node in ng.nodes.items()
-                  if node.bl_idname == 'WifiOutNode' and node.outputs]
+
+    wifi_out_nodes = [
+        (name, node.var_name) for name, node in ng.nodes.items()
+        if node.bl_idname == 'WifiOutNode' and node.outputs]
+
     if wifi_out_nodes:
-        wifi_dict = {node.var_name: name
-                     for name, node in ng.nodes.items()
-                     if node.bl_idname == 'WifiInNode'}
-        
-    for i,link in enumerate(list(ng.links)):
-        #  this proctects against a rare occurance where 
+        wifi_dict = {
+            node.var_name: name for name, node in ng.nodes.items()
+            if node.bl_idname == 'WifiInNode'}
+
+    for i, link in enumerate(list(ng.links)):
+        #  this proctects against a rare occurance where
         #  a link is considered valid without a to_socket
         #  or a from_socket. proctects against a blender crash
         #  see https://github.com/nortikin/sverchok/issues/493
@@ -76,7 +78,8 @@ def make_dep_dict(node_tree, down=False):
             return collections.defaultdict(set)  # this happens more often than one might think
         if link.is_hidden:
             continue
-        key, value = (link.from_node.name, link.to_node.name) if down else (link.to_node.name, link.from_node.name) 
+
+        key, value = (link.from_node.name, link.to_node.name) if down else (link.to_node.name, link.from_node.name)
         deps[key].add(value)
 
     for name, var_name in wifi_out_nodes:
@@ -88,7 +91,7 @@ def make_dep_dict(node_tree, down=False):
             deps[other].add(name)
         else:
             deps[name].add(other)
-    
+
     return deps
 
 
@@ -160,14 +163,14 @@ def separate_nodes(ng, links=None):
     node_links = make_dep_dict(ng)
     down = make_dep_dict(ng, down=True)
     for name, links in down.items():
-        node_links[name].update(links) 
+        node_links[name].update(links)
     n = nodes.pop()
     node_set_list = [set([n])]
     node_stack = collections.deque()
     # find separate sets
     node_stack_append = node_stack.append
     node_stack_pop = node_stack.pop
-    
+
     while nodes:
         for node in node_links[n]:
             if node not in node_set_list[-1]:
@@ -186,8 +189,9 @@ def separate_nodes(ng, links=None):
         skip_nodes = {n.name for n in ng.nodes if n.bl_idname in skip_types}
         if skip_nodes:
             node_set_list = filter(lambda ns:ns.isdisjoint(skip_nodes), node_set_list)
-    """    
+    """
     return [ns for ns in node_set_list if len(ns) > 1]
+
 
 def make_tree_from_nodes(node_names, tree, down=True):
     """
@@ -231,7 +235,7 @@ def make_tree_from_nodes(node_names, tree, down=True):
 def make_animation_tree(node_types, node_list, tree_name):
     """
     Create update list for specific purposes depending on which nodes are dynamic
-    node_types 
+    node_types
     """
     global update_cache
     ng = bpy.data.node_groups[tree_name]
@@ -244,7 +248,7 @@ def make_animation_tree(node_types, node_list, tree_name):
 
 def do_update_heat_map(node_list, nodes):
     """
-    Create a heat map for the node tree, 
+    Create a heat map for the node tree,
     Needs development.
     """
     if not nodes.id_data.sv_user_colors:
@@ -270,6 +274,7 @@ def do_update_heat_map(node_list, nodes):
         # linear scale.
         nodes[name].color = cold.lerp(hot, t / t_max)
 
+
 def update_error_nodes(ng, name, err=Exception):
     if "error nodes" in ng:
         error_nodes = ast.literal_eval(ng["error nodes"])
@@ -285,7 +290,8 @@ def update_error_nodes(ng, name, err=Exception):
         node.color = no_data_color
     else:
         node.color = exception_color
-    node.use_custom_color=True
+    node.use_custom_color = True
+
 
 def reset_error_nodes(ng):
     if "error nodes" in ng:
@@ -303,11 +309,12 @@ def do_update_general(node_list, nodes, procesed_nodes=set()):
     General update function for node set
     """
     global graphs
+    global graph_names
     timings = []
     graph = []
     total_time = 0
     done_nodes = set(procesed_nodes)
-    
+
     for node_name in node_list:
         if node_name in done_nodes:
             continue
@@ -321,28 +328,31 @@ def do_update_general(node_list, nodes, procesed_nodes=set()):
             if data_structure.DEBUG_MODE:
                 print("Processed  {} in: {:.4f}".format(node_name, delta))
             timings.append(delta)
-            graph.append({"name" : node_name,
-                           "bl_idname": node.bl_idname,
-                           "start": start,
-                           "duration": delta})
-            
+            graph.append({"name": node_name,
+                          "bl_idname": node.bl_idname,
+                          "start": start,
+                          "duration": delta})
+
         except Exception as err:
             ng = nodes.id_data
             update_error_nodes(ng, node_name, err)
             traceback.print_tb(err.__traceback__)
             print("Node {0} had exception {1}".format(node_name, err))
             return None
-    graphs.append(graph)    
+
+    graph_names.append(nodes[0].id_data.name)
+    graphs.append(graph)
     if data_structure.DEBUG_MODE:
         print("Node set updated in: {:.4f} seconds".format(total_time))
     return timings
-    
+
 
 def do_update(node_list, nodes):
     if data_structure.HEAT_MAP:
         do_update_heat_map(node_list, nodes)
     else:
         do_update_general(node_list, nodes)
+
 
 def build_update_list(ng=None):
     """
@@ -371,7 +381,9 @@ def process_to_node(node):
     Process nodes upstream until node
     """
     global graphs
+    global graph_names
     graphs = []
+    graph_names = []
 
     ng = node.id_data
     reset_error_nodes(ng)
@@ -379,10 +391,11 @@ def process_to_node(node):
     if data_structure.RELOAD_EVENT:
         reload_sverchok()
         return
-    
+
     update_list = make_tree_from_nodes([node.name], ng, down=False)
     do_update(update_list, ng.nodes)
-    
+
+
 def process_from_node(node):
     """
     Process downstream from a given node
@@ -390,7 +403,10 @@ def process_from_node(node):
     global update_cache
     global partial_update_cache
     global graphs
+    global graph_names
     graphs = []
+    graph_names = []
+
     ng = node.id_data
     reset_error_nodes(ng)
 
@@ -412,11 +428,13 @@ def process_from_node(node):
     else:
         process_tree(ng)
 
+
 def sverchok_trees():
     for ng in bpy.data.node_groups:
         if ng.bl_idname == "SverchCustomTreeType":
             yield ng
-    
+
+
 def process_tree(ng=None):
     global update_cache
     global partial_update_cache
@@ -439,12 +457,13 @@ def process_tree(ng=None):
             do_update(l, ng.nodes)
     else:
         pass
-        
-        
+
+
 def reload_sverchok():
     data_structure.RELOAD_EVENT = False
     from sverchok.core import handlers
-    handlers.sv_post_load([])    
+    handlers.sv_post_load([])
+
 
 def get_update_lists(ng):
     """
@@ -456,7 +475,8 @@ def get_update_lists(ng):
     if not ng.name in update_cache:
         build_update_list(ng)
     return (update_cache.get(ng.name), partial_update_cache.get(ng.name))
-    
+
+
 def register():
     addon_name = sverchok.__name__
     addon = bpy.context.user_preferences.addons.get(addon_name)
