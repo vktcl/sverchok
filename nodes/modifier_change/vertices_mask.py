@@ -33,17 +33,17 @@ class SvVertMaskNode(bpy.types.Node, SverchCustomTreeNode):
     def sv_init(self, context):
         self.inputs.new('StringsSocket', 'Mask')
         self.inputs.new('VerticesSocket', 'Vertices', 'Vertices')
-        self.inputs.new('StringsSocket', 'Poly Egde', 'Poly Egde')
+        self.inputs.new('StringsSocket', 'Poly Edge', 'Poly Edge')
 
         self.outputs.new('VerticesSocket', 'Vertices', 'Vertices')
-        self.outputs.new('StringsSocket', 'Poly Egde', 'Poly Egde')
+        self.outputs.new('StringsSocket', 'Poly Edge', 'Poly Edge')
 
     def process(self):
         if not any(s.is_linked for s in self.outputs):
             return
-        if self.inputs['Vertices'].is_linked and self.inputs['Poly Egde'].is_linked:
+        if self.inputs['Vertices'].is_linked and self.inputs['Poly Edge'].is_linked:
             verts = self.inputs['Vertices'].sv_get()
-            poly = self.inputs['Poly Egde'].sv_get()
+            poly = self.inputs['Poly Edge'].sv_get()
             verts = dataCorrect(verts)
             poly = dataCorrect(poly)
             self.inputs['Mask'].sv_get(default=[[1, 0]])
@@ -77,7 +77,7 @@ class SvVertMaskNode(bpy.types.Node, SverchCustomTreeNode):
                     poly_edge_out.append(pe)
 
             self.outputs['Vertices'].sv_set(verts_out)
-            self.outputs['Poly Egde'].sv_set(poly_edge_out)
+            self.outputs['Poly Edge'].sv_set(poly_edge_out)
 
 
 def register():
