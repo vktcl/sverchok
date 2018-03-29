@@ -42,15 +42,12 @@ from sverchok.core.socket_data import (
     sentinel)
 
 from sverchok.core.update_system import (
-    build_update_list,
-    process_from_node,
-    process_tree,
-    get_update_lists, update_error_nodes)
+    build_update_list, get_update_lists, update_error_nodes,
+    process_from_node, process_tree)
 
 from sverchok.core.socket_conversions import (
     DefaultImplicitConversionPolicy,
-    is_vector_to_matrix
-    )
+    is_vector_to_matrix)
 
 from sverchok.core.node_defaults import set_defaults_if_defined
 
@@ -541,6 +538,25 @@ class SverchCustomTree(NodeTree, SvNodeTreeCommon):
     sv_bake = BoolProperty(name="Bake", default=True, description='Bake this layout')
     sv_process = BoolProperty(name="Process", default=True, description='Process layout')
     sv_user_colors = StringProperty(default="")
+
+    @classmethod
+    def poll(cls, context):
+
+        editing = context.space_data.edit_tree
+        ntree = context.space_data.node_tree
+
+        show_sverchok = True if ntree else False
+        
+        if editing:
+            return True
+
+        if len(bpy.data.node_groups):
+            if len([ng for ng in bpy.data.node_groups if ng.bl_idname == 'SverchCustomTreeType']):
+                if not editing or ntree:
+                    context.space_data.node_tree = bpy.data.node_groups[0]
+        
+
+        return True
 
     def update(self):
         '''
