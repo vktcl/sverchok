@@ -7,12 +7,11 @@ import sys
 reload_event = False
 
 root_modules = [
-    "menu", "data_structure", "core",
-    "utils", "ui", "nodes", "old_nodes"
+    "menu", "core", "utils", "ui", "nodes", "old_nodes"
 ]
 
 core_modules = [
-    "monad_properties", "sv_custom_exceptions", "sockets", "node_tree",
+    "monad_properties", "sv_custom_exceptions", "sockets", "node_tree", "data_structure",
     "handlers", "update_system", "upgrade_nodes", "upgrade_group",
     "monad", "node_defaults"
 ]
@@ -92,8 +91,9 @@ def init_architecture(sv_name, utils_modules, ui_modules):
 
     # handle faux location of node_tree, 
     # make node_tree in sverchok.core.node_tree available from sverchok.node_tree
-    from sverchok.core import node_tree
+    from sverchok.core import node_tree, data_structure
     sys.modules["sverchok.node_tree"] = node_tree
+    sys.modules["sverchok.data_structure"] = data_structure
 
     imported_modules = []
     mods_bases = [
