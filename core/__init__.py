@@ -1,16 +1,18 @@
 import importlib
 import sverchok
 from sverchok.utils.logging import debug, exception
+import sys
+
 
 reload_event = False
 
 root_modules = [
-    "menu", "node_tree", "data_structure", "core",
+    "menu", "data_structure", "core",
     "utils", "ui", "nodes", "old_nodes"
 ]
 
 core_modules = [
-    "monad_properties", "sv_custom_exceptions", "sockets",
+    "monad_properties", "sv_custom_exceptions", "sockets", "node_tree",
     "handlers", "update_system", "upgrade_nodes", "upgrade_group",
     "monad", "node_defaults"
 ]
@@ -87,6 +89,11 @@ def import_all_modules(imported_modules, mods_bases):
 
 
 def init_architecture(sv_name, utils_modules, ui_modules):
+
+    # handle faux location of node_tree, 
+    # make node_tree in sverchok.core.node_tree available from sverchok.node_tree
+    from sverchok.core import node_tree
+    sys.modules["sverchok.node_tree"] = node_tree
 
     imported_modules = []
     mods_bases = [

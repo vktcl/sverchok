@@ -65,6 +65,7 @@ import importlib
 if __name__ != "sverchok":
     sys.modules["sverchok"] = sys.modules[__name__]
 
+# make this available lower down the chain
 from sverchok.core import sv_registration_utils, init_architecture, make_node_list
 from sverchok.core import reload_event, handle_reload_event
 from sverchok.utils import utils_modules
