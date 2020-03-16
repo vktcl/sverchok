@@ -262,6 +262,7 @@
     SvVectorRewire
     ---
     SvVertSortNode
+    SvVectorAccumulate
     VectorDropNode
     VectorPolarInNode
     VectorPolarOutNode
