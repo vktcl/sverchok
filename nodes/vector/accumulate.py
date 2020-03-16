@@ -26,9 +26,14 @@ class SvVectorAccumulate(bpy.types.Node, SverchCustomTreeNode):
     as_numpy: bpy.props.BoolProperty(
         description="output as numpy",
         name="np", default=True, update=updateNode) 
+
     prepend_zero_vec: bpy.props.BoolProperty(
         description="prepend a zero vec",
         name="Prepend Null", default=True, update=updateNode)
+
+    drop_last: bpy.prop.BoolProperty(
+        description="drops the last accumulate value, usually it is not needed",
+        name="Drop Tail", update=updateNode)
 
     def sv_init(self, context):
         self.inputs.new("SvVerticesSocket", 'Vectors')
@@ -46,7 +51,20 @@ class SvVectorAccumulate(bpy.types.Node, SverchCustomTreeNode):
         if not vectors_in:
             return
 
-        ...
+        """
+        supports two forms, switches automatically in-between:
+
+        1.  numerous lists, all one vector long.    
+            [[v1],[v1],[v1],....]
+        2.  numbers lists of each multiple vectors.
+            [[v1, v2, v3, ...], [v1...], [v1...]]
+        """
+
+        vectors = [(1,0,0),(1,1,1),(3,3,3),(6,5,7)]
+        npv = np.array(vectors)
+        f = np.add.accumulate(npv)
+
+        print(f)        # ...
 
 
 
