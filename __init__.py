@@ -91,6 +91,8 @@ def register():
         data_structure.RELOAD_EVENT = True
         menu.reload_menu()
 
+    sverchok.core.handlers.subscribe_to_viewer_nodes_name_changes()
+
 
 def unregister():
     sverchok.utils.clear_node_classes()

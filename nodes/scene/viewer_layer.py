@@ -490,7 +490,6 @@ def register():
     debug("* VLN: REGISTER the SvViewerLayerNode classes")
     _ = [bpy.utils.register_class(cls) for cls in classes]
     # setup subscriptions (useful when reloading the addon)
-    subscribe_to_viewer_nodes_name_changes()
 
 
 def unregister():
